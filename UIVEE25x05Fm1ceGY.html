@@ -1,0 +1,792 @@
+<html><head><base href="https://dentalflow.ai/interactive-dental-chart">
+<title>K.B.A.G.D Dental Chart</title>
+<style>
+  body {
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f7fa;
+    color: #333;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-bottom: 40px;
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    position: relative;
+    width: calc(100% - 80px);
+  }
+  h1 {
+    color: #0077be;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 60px; 
+    position: relative;
+    z-index: 1;
+  }
+  .dental-chart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 40px; 
+    margin-bottom: 40px;
+    position: relative;
+  }
+  .arch {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+  }
+  .tooth {
+    width: 60px;
+    height: 110px;
+    position: relative;
+    cursor: pointer;
+  }
+  .tooth-number {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 2px;
+  }
+  .tooth-surfaces {
+    width: 100%;
+    height: 66.67%;
+    position: relative;
+    background-color: #f0f0f0;
+    border-radius: 5px 5px 0 0;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+  }
+  .root-area {
+    width: 100%;
+    height: 33.33%;
+    position: relative;
+    display: flex;
+    justify-content: space-around;
+    background-color: #e0e0e0;
+    border-radius: 0 0 5px 5px;
+  }
+  .root {
+    width: 20%;
+    height: 100%;
+    background-color: #d0d0d0;
+    border-radius: 0 0 50% 50%;
+    box-shadow: inset 0 -5px 10px rgba(0,0,0,0.1);
+  }
+  .surface, .root {
+    position: absolute;
+    transition: background-color 0.3s;
+  }
+  .surface:hover, .root:hover {
+    opacity: 0.8;
+  }
+  .surface-top {
+    width: 100%;
+    height: 20%;
+    top: 0;
+    left: 0;
+    border-radius: 5px 5px 0 0;
+  }
+  .surface-left {
+    width: 20%;
+    height: 60%;
+    top: 20%;
+    left: 0;
+  }
+  .surface-center {
+    width: 60%;
+    height: 60%;
+    top: 20%;
+    left: 20%;
+  }
+  .surface-right {
+    width: 20%;
+    height: 60%;
+    top: 20%;
+    right: 0;
+  }
+  .surface-bottom {
+    width: 100%;
+    height: 20%;
+    bottom: 0;
+    left: 0;
+  }
+  .controls {
+    margin-top: 20px;
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+  }
+  select, button {
+    padding: 8px 12px;
+    margin: 0 5px;
+    font-size: 14px;
+  }
+  button {
+    background-color: #0077be;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #005fa3;
+  }
+  .upper-arch .tooth-number {
+    margin-bottom: 2px;
+  }
+  .upper-arch .root-area {
+    transform: rotate(180deg);
+  }
+  .lower-arch .tooth-number {
+    margin-top: 2px;
+    order: 1;
+  }
+  .lower-arch .tooth-surfaces {
+    order: 0;
+  }
+  .lower-arch .root-area {
+    order: -1;
+  }
+  .cavity { background-color: rgba(255, 0, 0, 0.7); }
+  .composite { background-color: rgba(100, 149, 237, 0.7); }
+  .amalgam { background-color: rgba(74, 74, 74, 0.7); }
+  .ceramic-crown { 
+    background-color: rgba(255, 255, 0, 0.7);
+    box-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
+  }
+  .pfm-crown { 
+    background-color: rgba(144, 238, 144, 0.7);
+    box-shadow: 0 0 5px rgba(144, 238, 144, 0.5);
+  }
+  .root-canal { background-color: rgba(255, 105, 180, 0.7); }
+  .veneer {
+    background-color: rgba(12, 222, 247, 0.7);  
+    box-shadow: 0 0 5px rgba(12, 222, 247, 0.5);
+  }
+  .missing .tooth-surfaces, .missing .root-area {
+    opacity: 0.3;
+  }
+  .missing .surface-center::after {
+    content: '❌';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: #ff0000;
+    z-index: 10;
+  }
+  .implant .root-area::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 30px;
+    background-color: #808080;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+  .implant .root-area::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 2px;
+    background-color: #808080;
+    box-shadow: 0 -5px 0 #808080, 0 5px 0 #808080;
+    z-index: 1;
+  }
+  .pontic .tooth-surfaces {
+    background-color: rgba(165, 173, 7, 0.7);
+    box-shadow: 0 0 5px rgba(165, 173, 7, 0.5);
+  }
+  .pontic .root-area {
+    opacity: 0.3;
+  }
+  .remaining-root .tooth-surfaces {
+    opacity: 0.3;
+  }
+  .remaining-root .root-area {
+    background-color: rgba(139, 69, 19, 0.7);
+  }
+  .nctsl {
+    background-color: #f8a847;
+  }
+  .glass-ionomer { 
+    background-color: rgba(177, 206, 203, 0.7); 
+  }
+  .legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 10px;
+  }
+  .legend-color {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    border: 1px solid #000;
+  }
+  .legend-implant {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    position: relative;
+  }
+  .legend-implant::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 24px;
+    background-color: #808080;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+  .legend-implant::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 2px;
+    background-color: #808080;
+    box-shadow: 0 -4px 0 #808080, 0 4px 0 #808080;
+  }
+  .upper-arch .tooth {
+    transform: rotate(180deg);
+  }
+  .upper-arch .tooth .tooth-number {
+    transform: rotate(180deg);
+  }
+  .arch-separator {
+    width: 100%;
+    height: 2px;
+    background-color: #0077be;
+    margin: 5px 0;
+  }
+  .vertical-separator {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    width: 2px;
+    height: calc(100% + 50px);
+    background-color: #0077be;
+    transform: translateX(-50%);
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 2;
+  }
+  .date {
+    font-style: italic;
+    color: #666;
+  }
+  .comments {
+    margin-top: 30px;
+    padding: 20px;
+    border-top: 1px solid #e0e0e0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  #commentsText {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+  }
+  .splint .tooth-surfaces {
+    border: 3px solid #000;
+    border-top: none;
+    border-bottom: none;
+  }
+  .legend-splint {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    border-left: 3px solid #000;
+    border-right: 3px solid #000;
+  }
+  .second-caries .tooth-number {
+    color: #ff0000;
+    text-decoration: underline;
+  }
+  .legend-second-caries {
+    color: #ff0000;
+    text-decoration: underline;
+    font-weight: bold;
+  }
+  .arch-labels {
+    position: absolute;
+    left: -10px;
+    top: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 16px;
+    color: #00008B;
+  }
+  .upper-arch .arch-labels {
+    flex-direction: column-reverse;
+  }
+  .patient-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .patient-info label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+  .patient-info label span {
+    min-width: 70px;
+    display: inline-block;
+  }
+  .patient-info input {
+    margin-left: 10px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 200px;
+  }
+  @media print {
+    body {
+      margin: 0;
+      padding: 20px;
+    }
+    
+    .container {
+      box-shadow: none;
+      margin: 0 auto;
+      padding: 20px;
+      width: calc(100% - 40px);
+      max-width: none;
+    }
+    
+    .dental-chart {
+      page-break-inside: avoid;
+      margin: 20px auto;
+    }
+    
+    .comments {
+      page-break-inside: avoid;
+      margin: 20px 0;
+    }
+  }
+  .white-spot { 
+    background: none !important;
+  }
+  .white-spot::after { 
+    content: 'W';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #666;
+    font-weight: bold;
+    font-size: 14px;
+    background: none;
+  }
+  .legend-white-spot {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #666;
+  }
+  .incipient-caries { 
+    background: none !important;
+  }
+  .incipient-caries::after { 
+    content: 'IC';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ff0000;
+    font-weight: bold;
+    font-size: 14px;
+    background: none;
+  }
+  .legend-incipient-caries {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #ff0000;
+  }
+  .upper-arch .tooth .white-spot::after,
+  .upper-arch .tooth .incipient-caries::after {
+    transform: translate(-50%, -50%) rotate(180deg);
+  }
+  .legend-item .legend-color.nctsl {
+    background-color: #f8a847;
+  }
+  .temporary-filling { 
+    background-color: rgba(210, 180, 140, 0.7); 
+  }
+  .temporary-crown { 
+    background-color: rgba(136, 71, 248, 0.7); 
+    box-shadow: 0 0 5px rgba(136, 71, 248, 0.5);
+  }
+  .logo-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px; 
+    position: relative;
+    z-index: 1;
+  }
+  .logo {
+    width: 150px;
+    height: auto;
+    position: relative;
+    top: 0;
+  }
+  h1 {
+    color: #0077be;
+    text-align: center;
+    margin-top: 5px; 
+    margin-bottom: 60px;  
+    position: relative;
+    z-index: 1;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo-container">
+      <img src="https://i.imgur.com/x4D4JKr.png" alt="Company Logo" class="logo">
+    </div>
+    <div class="header">
+      <div class="patient-info">
+        <label>
+          <span>Name:</span>
+          <input type="text" id="patientName">
+        </label>
+        <label>
+          <span>File No:</span>
+          <input type="text" id="fileNumber">
+        </label>
+      </div>
+      <div class="date" id="currentDate"></div>
+    </div>
+    <h1>K.B.A.G.D Dental Chart</h1>
+    <div class="dental-chart" id="dentalChart">
+      <div class="vertical-separator"></div>
+    </div>
+    <div class="controls">
+      <select id="conditionSelect">
+        <option value>Select Condition</option>
+        <option value="incipient-caries">Incipient Caries</option>
+        <option value="white-spot">White Spot Lesion</option>
+        <option value="nctsl">NCTSL</option>
+        <option value="cavity">Cavity</option>
+        <option value="second-caries">2nd Caries</option>
+        <option value="composite">Composite Filling</option>
+        <option value="glass-ionomer">Glass Ionomer</option>
+        <option value="temporary-filling">Temporary Filling</option>
+        <option value="amalgam">Amalgam Filling</option>
+        <option value="temporary-crown">Temporary Crown</option>
+        <option value="pfm-crown">PFM Crown</option>
+        <option value="ceramic-crown">Ceramic Crown</option>
+        <option value="veneer">Veneer</option>
+        <option value="root-canal">Root Canal</option>
+        <option value="implant">Implant</option>
+        <option value="splint">Splint</option>
+        <option value="missing">Missing</option>
+        <option value="remaining-root">Remaining Root</option>
+        <option value="pontic">Pontic</option>
+      </select>
+      <button id="clearBtn">Clear All</button>
+      <button id="downloadPdfBtn">Download as PDF</button>
+      <button id="downloadImageBtn">Download as Image</button>
+    </div>
+    <div class="print-date" id="printDate"></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-incipient-caries">IC</div>Incipient Caries</div>
+      <div class="legend-item"><div class="legend-white-spot">W</div>White Spot Lesion</div>
+      <div class="legend-item"><div class="legend-color nctsl"></div>NCTSL</div>
+      <div class="legend-item"><div class="legend-color cavity"></div>Cavity</div>
+      <div class="legend-item"><div class="legend-second-caries">18</div>2nd Caries</div>
+      <div class="legend-item"><div class="legend-color composite"></div>Composite</div>
+      <div class="legend-item"><div class="legend-color glass-ionomer"></div>Glass Ionomer</div>
+      <div class="legend-item"><div class="legend-color temporary-filling"></div>Temporary Filling</div>
+      <div class="legend-item"><div class="legend-color amalgam"></div>Amalgam</div>
+      <div class="legend-item"><div class="legend-color temporary-crown"></div>Temporary Crown</div>
+      <div class="legend-item"><div class="legend-color pfm-crown"></div>PFM Crown</div>
+      <div class="legend-item"><div class="legend-color ceramic-crown"></div>Ceramic Crown</div>
+      <div class="legend-item"><div class="legend-color veneer"></div>Veneer</div>
+      <div class="legend-item"><div class="legend-color root-canal"></div>Root Canal</div>
+      <div class="legend-item"><div class="legend-implant"></div>Implant</div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: rgba(165, 173, 7, 0.7);"></div>
+        Pontic
+      </div>
+      <div class="legend-item"><div class="legend-splint"></div>Splint</div>
+      <div class="legend-item"><div class="legend-color" style="background: #e0e0e0; opacity: 0.3;">&#x274c;</div>Missing</div>
+      <div class="legend-item"><div class="legend-color" style="background: rgba(139, 69, 19, 0.7);"></div>Remaining Root</div>
+    </div>
+    <div class="comments">
+      <textarea id="commentsText" placeholder="Additional comments..."></textarea>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>const upperTeeth = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
+const lowerTeeth = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
+const surfaces = ['top', 'left', 'center', 'right', 'bottom'];
+const dentalChart = document.getElementById('dentalChart');
+const conditionSelect = document.getElementById('conditionSelect');
+const clearBtn = document.getElementById('clearBtn');
+const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+const downloadImageBtn = document.getElementById('downloadImageBtn');
+const currentDateElement = document.getElementById('currentDate');
+const printDateElement = document.getElementById('printDate');
+const commentsText = document.getElementById('commentsText');
+const patientNameInput = document.getElementById('patientName');
+const fileNumberInput = document.getElementById('fileNumber');
+function createArch(teeth, isUpper) {
+  const arch = document.createElement('div');
+  arch.className = `arch ${isUpper ? 'upper-arch' : 'lower-arch'}`;
+  const labels = document.createElement('div');
+  labels.className = 'arch-labels';
+  labels.innerHTML = `
+        <div>${isUpper ? 'P' : 'L'}</div>
+        <div>B</div>
+      `;
+  arch.appendChild(labels);
+  teeth.forEach(toothNumber => {
+    const tooth = document.createElement('div');
+    tooth.className = 'tooth';
+    tooth.setAttribute('data-tooth', toothNumber);
+    tooth.innerHTML = `
+          <div class="tooth-number">${toothNumber}</div>
+          <div class="tooth-surfaces">
+            ${surfaces.map(surface => `<div class="surface surface-${surface}" data-surface="${surface}"></div>`).join('')}
+          </div>
+          <div class="root-area">
+            ${[1, 2, 3].map(i => `<div class="root root-${i}" data-root="${i}"></div>`).join('')}
+          </div>
+        `;
+    arch.appendChild(tooth);
+  });
+  return arch;
+}
+dentalChart.appendChild(createArch(upperTeeth, true));
+const separator = document.createElement('div');
+separator.className = 'arch-separator';
+dentalChart.appendChild(separator);
+dentalChart.appendChild(createArch(lowerTeeth, false));
+dentalChart.addEventListener('click', e => {
+  const tooth = e.target.closest('.tooth');
+  if (!tooth) return;
+  const condition = conditionSelect.value;
+  if (!condition) return;
+  const surfaces = tooth.querySelectorAll('.surface');
+  const roots = tooth.querySelectorAll('.root');
+  if (condition === 'missing') {
+    tooth.classList.toggle('missing');
+    if (tooth.classList.contains('missing')) {
+      surfaces.forEach(surface => {
+        surface.className = 'surface ' + surface.className.split(' ')[1];
+      });
+      roots.forEach(root => {
+        root.className = 'root ' + root.className.split(' ')[1];
+      });
+    }
+    tooth.classList.remove('implant', 'pontic', 'remaining-root', 'splint', 'second-caries');
+  } else if (condition === 'implant') {
+    tooth.classList.toggle('implant');
+    if (tooth.classList.contains('implant')) {
+      roots.forEach(root => {
+        root.className = 'root ' + root.className.split(' ')[1];
+      });
+    }
+    tooth.classList.remove('missing', 'pontic', 'remaining-root', 'splint', 'second-caries');
+  } else if (condition === 'pontic') {
+    tooth.classList.toggle('pontic');
+    tooth.classList.remove('missing', 'implant', 'remaining-root', 'splint', 'second-caries');
+    if (tooth.classList.contains('pontic')) {
+      surfaces.forEach(surface => {
+        surface.className = 'surface ' + surface.className.split(' ')[1] + ' pontic';
+      });
+      roots.forEach(root => {
+        root.className = 'root ' + root.className.split(' ')[1];
+      });
+    } else {
+      surfaces.forEach(surface => {
+        surface.className = 'surface ' + surface.className.split(' ')[1];
+      });
+    }
+  } else if (condition === 'remaining-root') {
+    tooth.classList.toggle('remaining-root');
+    if (tooth.classList.contains('remaining-root')) {
+      surfaces.forEach(surface => {
+        surface.className = 'surface ' + surface.className.split(' ')[1];
+      });
+    }
+    tooth.classList.remove('missing', 'implant', 'pontic', 'splint', 'second-caries');
+  } else if (condition === 'ceramic-crown' || condition === 'pfm-crown' || condition === 'veneer' || condition === 'temporary-crown') {
+    const hasFillings = Array.from(surfaces).some(surface => surface.classList.contains('composite') || surface.classList.contains('amalgam') || surface.classList.contains('cavity'));
+    if (hasFillings) {
+      alert('Cannot add crown or veneer to a tooth with fillings or cavities.');
+      return;
+    }
+    const hasCondition = Array.from(surfaces).every(surface => surface.classList.contains(condition));
+    surfaces.forEach(surface => {
+      surface.classList.remove('ceramic-crown', 'pfm-crown', 'veneer', 'temporary-crown');
+      if (!hasCondition) {
+        surface.classList.add(condition);
+        surface.classList.remove('cavity', 'composite', 'amalgam', 'nctsl');
+      }
+    });
+  } else if (condition === 'root-canal') {
+    if (e.target.classList.contains('root')) {
+      e.target.classList.toggle('root-canal');
+    }
+  } else if (condition === 'nctsl') {
+    if (e.target.classList.contains('surface')) {
+      e.target.classList.toggle('nctsl');
+      e.target.classList.remove('cavity', 'composite', 'amalgam', 'ceramic-crown', 'pfm-crown', 'veneer');
+    }
+  } else if (condition === 'cavity' || condition === 'composite' || condition === 'amalgam' || condition === 'glass-ionomer' || condition === 'temporary-filling') {
+    if (e.target.classList.contains('surface')) {
+      const hasCrownOrVeneer = Array.from(surfaces).some(surface => surface.classList.contains('ceramic-crown') || surface.classList.contains('pfm-crown') || surface.classList.contains('veneer'));
+      if (hasCrownOrVeneer) {
+        alert('Cannot add fillings or cavities to a tooth with crown or veneer.');
+        return;
+      }
+      e.target.classList.toggle(condition);
+      if (!e.target.classList.contains(condition)) {
+        e.target.classList.remove('cavity', 'composite', 'amalgam', 'glass-ionomer', 'temporary-filling', 'ceramic-crown', 'pfm-crown', 'veneer', 'nctsl');
+      }
+    }
+  } else if (condition === 'splint') {
+    tooth.classList.toggle('splint');
+  } else if (condition === 'second-caries') {
+    tooth.classList.toggle('second-caries');
+  } else if (condition === 'white-spot' || condition === 'incipient-caries') {
+    if (e.target.classList.contains('surface')) {
+      e.target.classList.toggle(condition);
+      if (!e.target.classList.contains(condition)) {
+        e.target.classList.remove('cavity', 'composite', 'amalgam', 'ceramic-crown', 'pfm-crown', 'veneer', 'nctsl', 'white-spot', 'incipient-caries');
+      }
+    }
+  }
+  if (condition !== 'missing' && condition !== 'implant' && condition !== 'pontic' && condition !== 'remaining-root' && condition !== 'splint' && condition !== 'second-caries') {
+    tooth.classList.remove('missing', 'pontic', 'remaining-root', 'splint', 'second-caries');
+  }
+});
+clearBtn.addEventListener('click', () => {
+  document.querySelectorAll('.surface, .root').forEach(element => {
+    element.className = element.className.split(' ')[0] + ' ' + element.className.split(' ')[1];
+  });
+  document.querySelectorAll('.tooth').forEach(tooth => {
+    tooth.classList.remove('missing', 'implant', 'pontic', 'remaining-root', 'splint', 'second-caries');
+  });
+  commentsText.value = '';
+  patientNameInput.value = '';
+  fileNumberInput.value = '';
+});
+function captureChart() {
+  document.querySelector('.controls').style.display = 'none';
+  document.querySelector('.header .date').style.display = 'none';
+  printDateElement.textContent = `Chart created on: ${new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })}`;
+  printDateElement.style.display = 'block';
+  printDateElement.style.textAlign = 'center';
+  printDateElement.style.marginTop = '20px';
+  printDateElement.style.fontStyle = 'italic';
+  return html2canvas(document.querySelector('.container'), {
+    scale: 2,
+    useCORS: true,
+    logging: false,
+    windowWidth: document.querySelector('.container').scrollWidth,
+    windowHeight: document.querySelector('.container').scrollHeight
+  }).then(canvas => {
+    document.querySelector('.controls').style.display = 'block';
+    document.querySelector('.header .date').style.display = 'block';
+    printDateElement.style.display = 'none';
+    return canvas;
+  });
+}
+downloadPdfBtn.addEventListener('click', () => {
+  const {
+    jsPDF
+  } = window.jspdf;
+  captureChart().then(canvas => {
+    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+    const contentWidth = canvas.width;
+    const contentHeight = canvas.height;
+    const pxToMm = 0.264583333;
+    const pageWidth = contentWidth * pxToMm;
+    const pageHeight = contentHeight * pxToMm;
+    const doc = new jsPDF({
+      orientation: pageWidth > pageHeight ? 'landscape' : 'portrait',
+      unit: 'mm',
+      format: [pageWidth, pageHeight]
+    });
+    doc.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
+    doc.save('dental_chart.pdf');
+  });
+});
+downloadImageBtn.addEventListener('click', () => {
+  captureChart().then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'dental_chart.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+});
+function updateCurrentDate() {
+  const now = new Date();
+  const options = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  };
+  currentDateElement.textContent = `Date: ${now.toLocaleDateString('en-US', options)}`;
+}
+updateCurrentDate();</script>
+</body>
+</html>
